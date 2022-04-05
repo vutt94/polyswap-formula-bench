@@ -4,15 +4,18 @@ import { FullMath } from "./libraries/FullMath.sol";
 import "hardhat/console.sol";
 
 contract PolySwapFormula {
+  uint256 public standardNewtonResult;
+  uint256 public standardHalleyResult;
+  uint256 public appNewtonResult;
+  uint256 public appHalleyResult;
+
   function standardFormulaNewton(
     uint256[2][] calldata parameters,
     uint256 k,
     uint256 initialX
-  ) external view returns (uint256[] memory results) {
-    results = new uint256[](100);
+  ) external {
     uint256 nextX = FullMath.toPrecision(initialX, 18);
     uint256 curX;
-    uint256 count = 0;
     do {
       curX = nextX;
       (uint256 fx, bool isFxNegative) = f(parameters, k, curX, 36, 18);
@@ -24,21 +27,18 @@ contract PolySwapFormula {
       uint256 dFx = derivativeF(parameters, curX, 54, 18);
 
       nextX = curX + FullMath.toPrecision(fx, 18) / dFx;
-
-      results[count] = nextX;
-      count++;
     } while (curX != nextX);
+
+    standardNewtonResult = nextX;
   }
 
   function standardFormulaHalley(
     uint256[2][] calldata parameters,
     uint256 k,
     uint256 initialX
-  ) external view returns (uint256[] memory results) {
-    results = new uint256[](100);
+  ) external {
     uint256 nextX = FullMath.toPrecision(initialX, 18);
     uint256 curX;
-    uint256 count = 0;
     do {
       curX = nextX;
       (uint256 fx, bool isFxNegative) = f(parameters, k, curX, 36, 18);
@@ -78,21 +78,16 @@ contract PolySwapFormula {
       } else {
         nextX = curX + FullMath.toPrecision(upperPart, 19) / lowerPart;
       }
-
-      results[count] = nextX;
-      count++;
     } while (curX != nextX);
+
+    standardHalleyResult = nextX;
   }
 
   function appFormulaNewton(uint256[2][] calldata parameters, uint256 initialX)
     external
-    view
-    returns (uint256[] memory results)
   {
-    results = new uint256[](100);
     uint256 nextX = FullMath.toPrecision(initialX, 18);
     uint256 curX;
-    uint256 count = 0;
     do {
       curX = nextX;
       (uint256 f, bool isFNegative) = appF(parameters, curX, 36, 18);
@@ -105,21 +100,16 @@ contract PolySwapFormula {
       } else {
         nextX = curX + FullMath.toPrecision(f, 19) / dF;
       }
-
-      results[count] = nextX;
-      count++;
     } while (curX != nextX);
+
+    appNewtonResult = nextX;
   }
 
   function appFormulaHalley(uint256[2][] calldata parameters, uint256 initialX)
     external
-    view
-    returns (uint256[] memory results)
   {
-    results = new uint256[](100);
     uint256 nextX = FullMath.toPrecision(initialX, 18);
     uint256 curX;
-    uint256 count = 0;
     do {
       curX = nextX;
       (uint256 fx, bool isFxNegative) = appF(parameters, curX, 36, 18);
@@ -164,10 +154,9 @@ contract PolySwapFormula {
       } else {
         nextX = curX + FullMath.toPrecision(upperPart, 19) / lowerPart;
       }
-
-      results[count] = nextX;
-      count++;
     } while (curX != nextX);
+
+    appHalleyResult = nextX;
   }
 
   function f(

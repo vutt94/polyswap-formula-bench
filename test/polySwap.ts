@@ -43,17 +43,29 @@ describe("PolySwap", function () {
   });
 
   it("PolySwap: Newton Method", async function () {
-    const results = await Promise.all(
-      testCases.map(async (testCase): Promise<BigNumber[]> => {
-        const results = await contract.standardFormulaNewton(
-          testCase.slice(0, 3) as [[BigNumber, BigNumber]],
-          testCase[3],
-          testCase[4]
-        );
+    const results: { result: BigNumber; gasUsed: BigNumber }[] = [];
 
-        return results.filter((item: BigNumber) => item.toString() !== "0");
-      })
+    const tx = await contract.standardFormulaNewton(
+      testCases[0].slice(0, 3) as [[BigNumber, BigNumber]],
+      testCases[0][3],
+      testCases[0][4]
     );
+    const receipt = await tx.wait();
+    results.push({
+      result: await contract.standardNewtonResult(),
+      gasUsed: receipt.gasUsed,
+    });
+
+    const tx1 = await contract.standardFormulaNewton(
+      testCases[1].slice(0, 3) as [[BigNumber, BigNumber]],
+      testCases[1][3],
+      testCases[1][4]
+    );
+    const receipt1 = await tx1.wait();
+    results.push({
+      result: await contract.standardNewtonResult(),
+      gasUsed: receipt1.gasUsed,
+    });
 
     console.log(results);
 
@@ -61,17 +73,29 @@ describe("PolySwap", function () {
   });
 
   it("PolySwap: Halley Method", async function () {
-    const results = await Promise.all(
-      testCases.map(async (testCase): Promise<BigNumber[]> => {
-        const results = await contract.standardFormulaHalley(
-          testCase.slice(0, 3) as [[BigNumber, BigNumber]],
-          testCase[3],
-          testCase[4]
-        );
+    const results: { result: BigNumber; gasUsed: BigNumber }[] = [];
 
-        return results.filter((item: BigNumber) => item.toString() !== "0");
-      })
+    const tx = await contract.standardFormulaHalley(
+      testCases[0].slice(0, 3) as [[BigNumber, BigNumber]],
+      testCases[0][3],
+      testCases[0][4]
     );
+    const receipt = await tx.wait();
+    results.push({
+      result: await contract.standardHalleyResult(),
+      gasUsed: receipt.gasUsed,
+    });
+
+    const tx1 = await contract.standardFormulaHalley(
+      testCases[1].slice(0, 3) as [[BigNumber, BigNumber]],
+      testCases[1][3],
+      testCases[1][4]
+    );
+    const receipt1 = await tx1.wait();
+    results.push({
+      result: await contract.standardHalleyResult(),
+      gasUsed: receipt1.gasUsed,
+    });
 
     console.log(results);
 
@@ -79,16 +103,27 @@ describe("PolySwap", function () {
   });
 
   it("PolySwap: Approximation Formula Newton Method", async function () {
-    const results = await Promise.all(
-      testCases.map(async (testCase): Promise<BigNumber[]> => {
-        const results = await contract.appFormulaNewton(
-          testCase.slice(0, 3) as [[BigNumber, BigNumber]],
-          testCase[4]
-        );
+    const results: { result: BigNumber; gasUsed: BigNumber }[] = [];
 
-        return results.filter((item: BigNumber) => item.toString() !== "0");
-      })
+    const tx = await contract.appFormulaNewton(
+      testCases[0].slice(0, 3) as [[BigNumber, BigNumber]],
+      testCases[0][4]
     );
+    const receipt = await tx.wait();
+    results.push({
+      result: await contract.appNewtonResult(),
+      gasUsed: receipt.gasUsed,
+    });
+
+    const tx1 = await contract.appFormulaNewton(
+      testCases[1].slice(0, 3) as [[BigNumber, BigNumber]],
+      testCases[1][4]
+    );
+    const receipt1 = await tx1.wait();
+    results.push({
+      result: await contract.appNewtonResult(),
+      gasUsed: receipt1.gasUsed,
+    });
 
     console.log(results);
 
@@ -96,16 +131,27 @@ describe("PolySwap", function () {
   });
 
   it("PolySwap: Approximation Formula Halley Method", async function () {
-    const results = await Promise.all(
-      testCases.map(async (testCase): Promise<BigNumber[]> => {
-        const results = await contract.appFormulaHalley(
-          testCase.slice(0, 3) as [[BigNumber, BigNumber]],
-          testCase[4]
-        );
+    const results: { result: BigNumber; gasUsed: BigNumber }[] = [];
 
-        return results.filter((item: BigNumber) => item.toString() !== "0");
-      })
+    const tx = await contract.appFormulaHalley(
+      testCases[0].slice(0, 3) as [[BigNumber, BigNumber]],
+      testCases[0][4]
     );
+    const receipt = await tx.wait();
+    results.push({
+      result: await contract.appHalleyResult(),
+      gasUsed: receipt.gasUsed,
+    });
+
+    const tx1 = await contract.appFormulaHalley(
+      testCases[1].slice(0, 3) as [[BigNumber, BigNumber]],
+      testCases[1][4]
+    );
+    const receipt1 = await tx1.wait();
+    results.push({
+      result: await contract.appHalleyResult(),
+      gasUsed: receipt1.gasUsed,
+    });
 
     console.log(results);
 
