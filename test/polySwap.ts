@@ -3,33 +3,25 @@ import { ethers } from "hardhat";
 import { BigNumber } from "@ethersproject/bignumber";
 
 describe("PolySwap", function () {
+  let decimals = 18;
+  let decimal = BigNumber.from(10).pow(decimals);
+
   let Contract;
   let contract: any;
 
-  let owner: any, addr1: any, addr2;
+  let TokenA;
+  let tokenA: any;
+  let tokenAReserve = BigNumber.from(1000).mul(decimal);
 
-  const testCases: [
-    [BigNumber, BigNumber],
-    [BigNumber, BigNumber],
-    [BigNumber, BigNumber],
-    BigNumber,
-    BigNumber
-  ][] = [
-    [
-      [BigNumber.from(20), BigNumber.from(100)],
-      [BigNumber.from(30), BigNumber.from(40)],
-      [BigNumber.from(50), BigNumber.from(60)],
-      BigNumber.from(10),
-      BigNumber.from(5),
-    ],
-    [
-      [BigNumber.from(30), BigNumber.from(400)],
-      [BigNumber.from(50), BigNumber.from(60)],
-      [BigNumber.from(20), BigNumber.from(100)],
-      BigNumber.from(10),
-      BigNumber.from(5),
-    ],
-  ];
+  let TokenB;
+  let tokenB: any;
+  let tokenBReserve = BigNumber.from(1000).mul(decimal);
+
+  let TokenC;
+  let tokenC: any;
+  let tokenCReserve = BigNumber.from(1000).mul(decimal);
+
+  let owner: any, addr1: any, addr2;
 
   //To run these steps before each test scenario.
   beforeEach(async function () {
@@ -37,124 +29,80 @@ describe("PolySwap", function () {
     [owner, addr1, addr2] = await ethers.getSigners();
     //to create an instance of kolkaToken &
     // & to deploy it with 30 KOL.
-    Contract = await ethers.getContractFactory("PolySwapFormula");
-    contract = await Contract.deploy();
+
+    TokenA = await ethers.getContractFactory("TokenA");
+    tokenA = await TokenA.deploy();
+    await tokenA.deployed();
+
+    TokenB = await ethers.getContractFactory("TokenB");
+    tokenB = await TokenB.deploy();
+    await tokenB.deployed();
+
+    TokenC = await ethers.getContractFactory("TokenC");
+    tokenC = await TokenC.deploy();
+    await tokenC.deployed();
+
+    Contract = await ethers.getContractFactory("PolySwap");
+    contract = await Contract.deploy(
+      [tokenA.address, tokenB.address],
+      [
+        BigNumber.from(5).mul(decimal),
+        BigNumber.from(10).mul(decimal),
+        BigNumber.from(20).mul(decimal),
+      ],
+      [
+        BigNumber.from(0).mul(decimal),
+        BigNumber.from(5).mul(decimal),
+        BigNumber.from(15).mul(decimal),
+      ],
+      [
+        BigNumber.from(10).mul(decimal),
+        BigNumber.from(15).mul(decimal),
+        BigNumber.from(25).mul(decimal),
+      ],
+      [tokenAReserve, tokenBReserve, tokenCReserve],
+      BigNumber.from(200000).mul(decimal),
+      BigNumber.from(200000).mul(decimal),
+      BigNumber.from(10),
+      BigNumber.from(2)
+    );
     await contract.deployed();
+
+    const tx1 = await tokenA.transfer(contract.address, tokenAReserve);
+    await tx1.wait();
+
+    const tx2 = await tokenB.transfer(contract.address, tokenBReserve);
+    await tx2.wait();
+
+    const tx3 = await tokenC.transfer(contract.address, tokenCReserve);
+    await tx3.wait();
   });
 
-  it("PolySwap: Newton Method", async function () {
-    const results: { result: BigNumber; gasUsed: BigNumber }[] = [];
+  it("PolySwap: Swap Exact Token For Token", async function () {
+    const swapAmountIn = BigNumber.from(100).mul(decimal);
+    const swapAmountOutMin = BigNumber.from(20).mul(decimal);
+    const balanceTokenInAfterSwap = BigNumber.from(998900).mul(decimal);
+    const balanceTokenOutAfterSwap = "999023598611012685139043"; // manual calculated
 
-    const tx = await contract.standardFormulaNewton(
-      testCases[0].slice(0, 3) as [[BigNumber, BigNumber]],
-      testCases[0][3],
-      testCases[0][4]
+    const approveTx = await tokenA.approve(contract.address, swapAmountIn);
+    await approveTx.wait();
+
+    const swapTx = await contract.swapExactTokenForToken([
+      tokenA.address,
+      tokenB.address,
+      swapAmountIn,
+      swapAmountOutMin,
+    ]);
+
+    const receipt = await swapTx.wait();
+
+    expect(await tokenA.balanceOf(owner.address)).to.be.equals(
+      balanceTokenInAfterSwap
     );
-    const receipt = await tx.wait();
-    results.push({
-      result: await contract.standardNewtonResult(),
-      gasUsed: receipt.gasUsed,
-    });
-
-    const tx1 = await contract.standardFormulaNewton(
-      testCases[1].slice(0, 3) as [[BigNumber, BigNumber]],
-      testCases[1][3],
-      testCases[1][4]
+    expect(await tokenB.balanceOf(owner.address)).to.be.equals(
+      balanceTokenOutAfterSwap
     );
-    const receipt1 = await tx1.wait();
-    results.push({
-      result: await contract.standardNewtonResult(),
-      gasUsed: receipt1.gasUsed,
-    });
 
-    console.log(results);
-
-    expect(true).to.be.equals(true);
-  });
-
-  it("PolySwap: Halley Method", async function () {
-    const results: { result: BigNumber; gasUsed: BigNumber }[] = [];
-
-    const tx = await contract.standardFormulaHalley(
-      testCases[0].slice(0, 3) as [[BigNumber, BigNumber]],
-      testCases[0][3],
-      testCases[0][4]
-    );
-    const receipt = await tx.wait();
-    results.push({
-      result: await contract.standardHalleyResult(),
-      gasUsed: receipt.gasUsed,
-    });
-
-    const tx1 = await contract.standardFormulaHalley(
-      testCases[1].slice(0, 3) as [[BigNumber, BigNumber]],
-      testCases[1][3],
-      testCases[1][4]
-    );
-    const receipt1 = await tx1.wait();
-    results.push({
-      result: await contract.standardHalleyResult(),
-      gasUsed: receipt1.gasUsed,
-    });
-
-    console.log(results);
-
-    expect(true).to.be.equals(true);
-  });
-
-  it("PolySwap: Approximation Formula Newton Method", async function () {
-    const results: { result: BigNumber; gasUsed: BigNumber }[] = [];
-
-    const tx = await contract.appFormulaNewton(
-      testCases[0].slice(0, 3) as [[BigNumber, BigNumber]],
-      testCases[0][4]
-    );
-    const receipt = await tx.wait();
-    results.push({
-      result: await contract.appNewtonResult(),
-      gasUsed: receipt.gasUsed,
-    });
-
-    const tx1 = await contract.appFormulaNewton(
-      testCases[1].slice(0, 3) as [[BigNumber, BigNumber]],
-      testCases[1][4]
-    );
-    const receipt1 = await tx1.wait();
-    results.push({
-      result: await contract.appNewtonResult(),
-      gasUsed: receipt1.gasUsed,
-    });
-
-    console.log(results);
-
-    expect(true).to.be.equals(true);
-  });
-
-  it("PolySwap: Approximation Formula Halley Method", async function () {
-    const results: { result: BigNumber; gasUsed: BigNumber }[] = [];
-
-    const tx = await contract.appFormulaHalley(
-      testCases[0].slice(0, 3) as [[BigNumber, BigNumber]],
-      testCases[0][4]
-    );
-    const receipt = await tx.wait();
-    results.push({
-      result: await contract.appHalleyResult(),
-      gasUsed: receipt.gasUsed,
-    });
-
-    const tx1 = await contract.appFormulaHalley(
-      testCases[1].slice(0, 3) as [[BigNumber, BigNumber]],
-      testCases[1][4]
-    );
-    const receipt1 = await tx1.wait();
-    results.push({
-      result: await contract.appHalleyResult(),
-      gasUsed: receipt1.gasUsed,
-    });
-
-    console.log(results);
-
-    expect(true).to.be.equals(true);
+    console.log("Swap Exact Token for Token, Gas used: %s", receipt.gasUsed);
   });
 });
