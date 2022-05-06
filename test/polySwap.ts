@@ -64,6 +64,7 @@ describe("PolySwap", function () {
       BigNumber.from(200000).mul(decimal),
       BigNumber.from(200000).mul(decimal),
       BigNumber.from(10),
+      BigNumber.from(2),
       BigNumber.from(2)
     );
     await contract.deployed();

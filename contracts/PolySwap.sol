@@ -32,8 +32,8 @@ contract PolySwap {
     uint256 amountTokenOutMin;
   }
 
-  mapping(IERC20 => address) public tokens;
-  mapping(IERC20 => uint256) public liquidityTokens;
+  address[] public tokens;
+  mapping(IERC20 => uint256) public ratioTokens;
   mapping(IERC20 => uint256) public reserveTokens;
   mapping(IERC20 => uint160) public minimumPriceTokens;
   mapping(IERC20 => uint160) public maximumPriceTokens;
@@ -41,6 +41,7 @@ contract PolySwap {
   uint128 public supply;
   uint16 public fee;
   uint16 public singleFee;
+  uint160 public feeThreshold;
   uint16 internal constant BPS = 10000;
 
   constructor(
@@ -52,15 +53,17 @@ contract PolySwap {
     uint128 _liquidity,
     uint128 _supply,
     uint16 _fee,
-    uint16 _singleFee
+    uint16 _singleFee,
+    uint160 _feeThreshold
   ) public {
     uint256 tokenLength = _tokens.length;
     for (uint256 i = 0; i < tokenLength; ++i) {
-      tokens[IERC20(_tokens[i])] = _tokens[i];
-      liquidityTokens[IERC20(_tokens[i])] = PolySwapHelper.calculateLiquidity(
+      tokens.push(_tokens[i]);
+      ratioTokens[IERC20(_tokens[i])] = PolySwapHelper.calculateRatio(
         _reverves[i],
         _initPrices[i],
-        _maxPrices[i]
+        _maxPrices[i],
+        _liquidity
       );
 
       reserveTokens[IERC20(_tokens[i])] = _reverves[i];
@@ -70,6 +73,7 @@ contract PolySwap {
       supply = _supply;
       fee = _fee;
       singleFee = _singleFee;
+      feeThreshold = _feeThreshold;
     }
   }
 
@@ -80,12 +84,12 @@ contract PolySwap {
     IERC20 tokenOut = IERC20(params.tokenOut);
 
     uint160 curPriceTokenIn = PolySwapHelper.calculateTokenPrice(
-      liquidityTokens[tokenIn],
+      ratioTokens[tokenIn] * liquidity,
       maximumPriceTokens[tokenIn],
       reserveTokens[tokenIn]
     );
     uint160 resultPriceTokenIn = PolySwapHelper.calculateTokenPrice(
-      liquidityTokens[tokenIn],
+      ratioTokens[tokenIn] * liquidity,
       curPriceTokenIn,
       params.amountTokenIn
     );
@@ -93,20 +97,25 @@ contract PolySwap {
       resultPriceTokenIn >= minimumPriceTokens[tokenIn],
       "insufficient liquidity"
     );
-    uint256 deltaIndexTokenIn = PolySwapHelper.calculateDeltaIndexTokenOut(
-      liquidityTokens[tokenIn],
+    uint256 deltaIndexTokenOut = PolySwapHelper.calculateDeltaIndexTokenOut(
+      ratioTokens[tokenIn] * liquidity,
       resultPriceTokenIn,
-      curPriceTokenIn,
+      curPriceTokenIn
+    );
+
+    uint256 deltaIndexTokenIn = PolySwapHelper.calculateDeltaIndexTokenIn(
+      deltaIndexTokenOut,
       fee,
       BPS
     );
+
     uint160 curPriceTokenOut = PolySwapHelper.calculateTokenPrice(
-      liquidityTokens[tokenOut],
+      ratioTokens[tokenOut] * liquidity,
       maximumPriceTokens[tokenOut],
       reserveTokens[tokenOut]
     );
-    uint256 resultPriceTokenOut = PolySwapHelper.calculateTokenPriceByIndex(
-      liquidityTokens[tokenOut],
+    uint160 resultPriceTokenOut = PolySwapHelper.calculateTokenPriceByIndex(
+      ratioTokens[tokenOut] * liquidity,
       curPriceTokenOut,
       deltaIndexTokenIn
     );
@@ -114,8 +123,13 @@ contract PolySwap {
       resultPriceTokenOut <= maximumPriceTokens[tokenOut],
       "insufficient liquidity"
     );
-    uint256 amountTokenOut = (liquidityTokens[tokenOut] / curPriceTokenOut) -
-      (liquidityTokens[tokenOut] / resultPriceTokenOut);
+
+    uint256 amountTokenOut = PolySwapHelper.calculateAmountTokenOut(
+      ratioTokens[tokenOut] * liquidity,
+      curPriceTokenOut,
+      resultPriceTokenOut
+    );
+
     require(
       amountTokenOut >= params.amountTokenOutMin,
       "not fit user's desired tokenOut amount"
@@ -130,6 +144,15 @@ contract PolySwap {
       tokenOut,
       reserveTokens[tokenOut] - amountTokenOut
     );
+
+    // uint256 reserveTokenIndex;
+    // uint256 length = tokens.length;
+    // for (uint256 i = 0; i < length; ++i) {
+    //   reserveTokenIndex += PolySwapHelper.calculateReserveIndexOfToken(
+    //     ratioTokens[IERC20(tokens[i])] * liquidity,
+    //     maximumPriceTokens
+    //   );
+    // }
   }
 
   function _verifyReserve(
