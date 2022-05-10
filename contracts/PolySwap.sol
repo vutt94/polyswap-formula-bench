@@ -135,6 +135,8 @@ contract PolySwap {
       "not fit user's desired tokenOut amount"
     );
 
+    console.log(amountTokenOut);
+
     tokenIn.transferFrom(msg.sender, address(this), params.amountTokenIn);
     tokenOut.transfer(msg.sender, amountTokenOut);
 
@@ -146,8 +148,7 @@ contract PolySwap {
     );
 
     // uint256 reserveTokenIndex;
-    // uint256 length = tokens.length;
-    // for (uint256 i = 0; i < length; ++i) {
+    // for (uint256 i = 0; i < tokens.length; ++i) {
     //   reserveTokenIndex += PolySwapHelper.calculateReserveIndexOfToken(
     //     ratioTokens[IERC20(tokens[i])] * liquidity,
     //     maximumPriceTokens
