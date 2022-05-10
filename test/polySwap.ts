@@ -17,15 +17,15 @@ describe("PolySwap", function () {
 
   let TokenA;
   let tokenA: any;
-  let tokenAReserve = BigNumber.from(10).mul(decimal2);
+  let tokenAReserve = BigNumber.from(1).mul(decimal2).mul(decimal);
 
   let TokenB;
   let tokenB: any;
-  let tokenBReserve = BigNumber.from(10).mul(decimal2);
+  let tokenBReserve = BigNumber.from(1).mul(decimal2).mul(decimal);
 
   let TokenC;
   let tokenC: any;
-  let tokenCReserve = BigNumber.from(10).mul(decimal2);
+  let tokenCReserve = BigNumber.from(1).mul(decimal2).mul(decimal);
 
   let owner: any, addr1: any, addr2;
 
@@ -62,12 +62,12 @@ describe("PolySwap", function () {
         BigNumber.from(0).mul(decimal),
       ],
       [
-        BigNumber.from(2).pow(63),
-        BigNumber.from(2).pow(63),
-        BigNumber.from(2).pow(63),
+        BigNumber.from(2).pow(63).mul(decimal),
+        BigNumber.from(2).pow(63).mul(decimal),
+        BigNumber.from(2).pow(63).mul(decimal),
       ],
       [tokenAReserve, tokenBReserve, tokenCReserve],
-      BigNumber.from(1).mul(decimal3),
+      BigNumber.from(1).mul(decimal3).mul(decimal),
       BigNumber.from(1).mul(decimal3).mul(decimal),
       BigNumber.from(0),
       BigNumber.from(0),
@@ -87,12 +87,12 @@ describe("PolySwap", function () {
 
   it("PolySwap: Swap Exact Token For Token", async function () {
     const swapAmountIn = BigNumber.from(6845707394643);
-    const swapAmountOutMin = BigNumber.from(471369582643);
+    const swapAmountOutMin = BigNumber.from(0);
     // const balanceTokenInAfterSwap = BigNumber.from(998900).mul(decimal);
     // const balanceTokenOutAfterSwap = "999023598611012685139043"; // manual calculated
 
-    // const approveTx = await tokenA.approve(contract.address, swapAmountIn);
-    // await approveTx.wait();
+    const approveTx = await tokenA.approve(contract.address, swapAmountIn);
+    await approveTx.wait();
 
     const swapTx = await contract.swapExactTokenForToken([
       tokenA.address,

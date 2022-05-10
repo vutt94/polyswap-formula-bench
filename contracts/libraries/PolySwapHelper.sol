@@ -10,7 +10,10 @@ library PolySwapHelper {
   ) internal pure returns (uint256 ratio) {
     assembly {
       ratio := div(
-        div(mul(mul(reserve, initPrice), maxPrice), sub(maxPrice, initPrice)),
+        div(
+          reserve,
+          sub(div(exp(10, 18), initPrice), div(exp(10, 18), maxPrice))
+        ),
         liquidity
       )
     }
@@ -24,7 +27,7 @@ library PolySwapHelper {
     assembly {
       price := div(
         mul(liquidity, maxPrice),
-        add(mul(reserve, maxPrice), liquidity)
+        div(add(mul(reserve, maxPrice), liquidity), exp(10, 18))
       )
     }
   }

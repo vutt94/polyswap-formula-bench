@@ -88,11 +88,15 @@ contract PolySwap {
       maximumPriceTokens[tokenIn],
       reserveTokens[tokenIn]
     );
+
     uint160 resultPriceTokenIn = PolySwapHelper.calculateTokenPrice(
       ratioTokens[tokenIn] * liquidity,
       curPriceTokenIn,
       params.amountTokenIn
     );
+
+    console.log(resultPriceTokenIn);
+
     require(
       resultPriceTokenIn >= minimumPriceTokens[tokenIn],
       "insufficient liquidity"
