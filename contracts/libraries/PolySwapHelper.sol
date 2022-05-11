@@ -32,6 +32,22 @@ library PolySwapHelper {
     }
   }
 
+  function calculateTokenResultPrice(
+    uint256 liquidity,
+    uint160 curPrice,
+    uint256 amountIn
+  ) internal pure returns (uint160 price) {
+    assembly {
+      price := div(
+        mul(liquidity, curPrice),
+        div(
+          add(mul(amountIn, curPrice), mul(liquidity, exp(10, 18))),
+          exp(10, 18)
+        )
+      )
+    }
+  }
+
   function calculateTokenPriceByIndex(
     uint256 liquidity,
     uint160 maxPrice,

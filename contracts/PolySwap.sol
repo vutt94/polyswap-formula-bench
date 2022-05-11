@@ -83,29 +83,36 @@ contract PolySwap {
     IERC20 tokenIn = IERC20(params.tokenIn);
     IERC20 tokenOut = IERC20(params.tokenOut);
 
+    console.log("liqTokenIn is %s", ratioTokens[tokenIn] * liquidity);
+
     uint160 curPriceTokenIn = PolySwapHelper.calculateTokenPrice(
       ratioTokens[tokenIn] * liquidity,
       maximumPriceTokens[tokenIn],
       reserveTokens[tokenIn]
     );
 
-    uint160 resultPriceTokenIn = PolySwapHelper.calculateTokenPrice(
+    console.log("curPriceTokenIn is %s", curPriceTokenIn);
+
+    uint160 resultPriceTokenIn = PolySwapHelper.calculateTokenResultPrice(
       ratioTokens[tokenIn] * liquidity,
       curPriceTokenIn,
       params.amountTokenIn
     );
 
-    console.log(resultPriceTokenIn);
+    console.log("resultPriceTokenIn is %s", resultPriceTokenIn);
 
     require(
       resultPriceTokenIn >= minimumPriceTokens[tokenIn],
       "insufficient liquidity"
     );
+
     uint256 deltaIndexTokenOut = PolySwapHelper.calculateDeltaIndexTokenOut(
       ratioTokens[tokenIn] * liquidity,
       resultPriceTokenIn,
       curPriceTokenIn
     );
+
+    console.log("deltaIndexTokenOut is %s", deltaIndexTokenOut);
 
     uint256 deltaIndexTokenIn = PolySwapHelper.calculateDeltaIndexTokenIn(
       deltaIndexTokenOut,
@@ -113,16 +120,24 @@ contract PolySwap {
       BPS
     );
 
+    console.log("deltaIndexTokenIn is %s", deltaIndexTokenIn);
+
     uint160 curPriceTokenOut = PolySwapHelper.calculateTokenPrice(
       ratioTokens[tokenOut] * liquidity,
       maximumPriceTokens[tokenOut],
       reserveTokens[tokenOut]
     );
+
+    console.log("curPriceTokenOut is %s", curPriceTokenOut);
+
     uint160 resultPriceTokenOut = PolySwapHelper.calculateTokenPriceByIndex(
       ratioTokens[tokenOut] * liquidity,
       curPriceTokenOut,
       deltaIndexTokenIn
     );
+
+    console.log("resultPriceTokenOut is %s", resultPriceTokenOut);
+
     require(
       resultPriceTokenOut <= maximumPriceTokens[tokenOut],
       "insufficient liquidity"
@@ -139,7 +154,7 @@ contract PolySwap {
       "not fit user's desired tokenOut amount"
     );
 
-    console.log(amountTokenOut);
+    console.log("amountTokenOut is %s", amountTokenOut);
 
     tokenIn.transferFrom(msg.sender, address(this), params.amountTokenIn);
     tokenOut.transfer(msg.sender, amountTokenOut);

@@ -1,6 +1,6 @@
 pragma solidity 0.8.9;
 
-import { FullMath } from "./libraries/FullMath.sol";
+import { PolySwapFormulaHelper } from "./libraries/PolySwapFormulaHelper.sol";
 import "hardhat/console.sol";
 
 contract PolySwapFormula {
@@ -14,7 +14,7 @@ contract PolySwapFormula {
     uint256 k,
     uint256 initialX
   ) external {
-    uint256 nextX = FullMath.toPrecision(initialX, 18);
+    uint256 nextX = PolySwapFormulaHelper.toPrecision(initialX, 18);
     uint256 curX;
     do {
       curX = nextX;
@@ -26,7 +26,7 @@ contract PolySwapFormula {
 
       uint256 dFx = derivativeF(parameters, curX, 54, 18);
 
-      nextX = curX + FullMath.toPrecision(fx, 18) / dFx;
+      nextX = curX + PolySwapFormulaHelper.toPrecision(fx, 18) / dFx;
     } while (curX != nextX);
 
     standardNewtonResult = nextX;
@@ -37,7 +37,7 @@ contract PolySwapFormula {
     uint256 k,
     uint256 initialX
   ) external {
-    uint256 nextX = FullMath.toPrecision(initialX, 18);
+    uint256 nextX = PolySwapFormulaHelper.toPrecision(initialX, 18);
     uint256 curX;
     do {
       curX = nextX;
@@ -50,33 +50,45 @@ contract PolySwapFormula {
       bool lowerPartNegative;
 
       if (isFxNegative) {
-        if (fx * doubleDerivativeFx >= 2 * FullMath.pow2(derivativeFx)) {
+        if (
+          fx * doubleDerivativeFx >=
+          2 * PolySwapFormulaHelper.pow2(derivativeFx)
+        ) {
           lowerPartNegative = false;
         } else {
           lowerPartNegative = true;
         }
 
-        lowerPart = FullMath.subAbs(
+        lowerPart = PolySwapFormulaHelper.subAbs(
           fx * doubleDerivativeFx,
-          2 * FullMath.pow2(derivativeFx)
+          2 * PolySwapFormulaHelper.pow2(derivativeFx)
         );
       } else {
-        if (2 * FullMath.pow2(derivativeFx) >= fx * doubleDerivativeFx) {
+        if (
+          2 * PolySwapFormulaHelper.pow2(derivativeFx) >=
+          fx * doubleDerivativeFx
+        ) {
           lowerPartNegative = false;
         } else {
           lowerPartNegative = true;
         }
 
-        lowerPart = FullMath.subAbs(
-          2 * FullMath.pow2(derivativeFx),
+        lowerPart = PolySwapFormulaHelper.subAbs(
+          2 * PolySwapFormulaHelper.pow2(derivativeFx),
           fx * doubleDerivativeFx
         );
       }
 
       if (lowerPartNegative) {
-        nextX = curX - FullMath.toPrecision(upperPart, 19) / lowerPart;
+        nextX =
+          curX -
+          PolySwapFormulaHelper.toPrecision(upperPart, 19) /
+          lowerPart;
       } else {
-        nextX = curX + FullMath.toPrecision(upperPart, 19) / lowerPart;
+        nextX =
+          curX +
+          PolySwapFormulaHelper.toPrecision(upperPart, 19) /
+          lowerPart;
       }
     } while (curX != nextX);
 
@@ -86,7 +98,7 @@ contract PolySwapFormula {
   function appFormulaNewton(uint256[2][] calldata parameters, uint256 initialX)
     external
   {
-    uint256 nextX = FullMath.toPrecision(initialX, 18);
+    uint256 nextX = PolySwapFormulaHelper.toPrecision(initialX, 18);
     uint256 curX;
     do {
       curX = nextX;
@@ -95,10 +107,10 @@ contract PolySwapFormula {
 
       if (isFNegative) {
         unchecked {
-          nextX = curX - FullMath.toPrecision(f, 19) / dF;
+          nextX = curX - PolySwapFormulaHelper.toPrecision(f, 19) / dF;
         }
       } else {
-        nextX = curX + FullMath.toPrecision(f, 19) / dF;
+        nextX = curX + PolySwapFormulaHelper.toPrecision(f, 19) / dF;
       }
     } while (curX != nextX);
 
@@ -108,7 +120,7 @@ contract PolySwapFormula {
   function appFormulaHalley(uint256[2][] calldata parameters, uint256 initialX)
     external
   {
-    uint256 nextX = FullMath.toPrecision(initialX, 18);
+    uint256 nextX = PolySwapFormulaHelper.toPrecision(initialX, 18);
     uint256 curX;
     do {
       curX = nextX;
@@ -126,33 +138,45 @@ contract PolySwapFormula {
       bool lowerPartNegative;
 
       if (isFxNegative) {
-        if (fx * doubleDerivativeFx >= 2 * FullMath.pow2(derivativeFx)) {
+        if (
+          fx * doubleDerivativeFx >=
+          2 * PolySwapFormulaHelper.pow2(derivativeFx)
+        ) {
           lowerPartNegative = false;
         } else {
           lowerPartNegative = true;
         }
 
-        lowerPart = FullMath.subAbs(
+        lowerPart = PolySwapFormulaHelper.subAbs(
           fx * doubleDerivativeFx,
-          2 * FullMath.pow2(derivativeFx)
+          2 * PolySwapFormulaHelper.pow2(derivativeFx)
         );
       } else {
-        if (2 * FullMath.pow2(derivativeFx) >= fx * doubleDerivativeFx) {
+        if (
+          2 * PolySwapFormulaHelper.pow2(derivativeFx) >=
+          fx * doubleDerivativeFx
+        ) {
           lowerPartNegative = false;
         } else {
           lowerPartNegative = true;
         }
 
-        lowerPart = FullMath.subAbs(
-          2 * FullMath.pow2(derivativeFx),
+        lowerPart = PolySwapFormulaHelper.subAbs(
+          2 * PolySwapFormulaHelper.pow2(derivativeFx),
           fx * doubleDerivativeFx
         );
       }
 
       if (lowerPartNegative) {
-        nextX = curX - FullMath.toPrecision(upperPart, 19) / lowerPart;
+        nextX =
+          curX -
+          PolySwapFormulaHelper.toPrecision(upperPart, 19) /
+          lowerPart;
       } else {
-        nextX = curX + FullMath.toPrecision(upperPart, 19) / lowerPart;
+        nextX =
+          curX +
+          PolySwapFormulaHelper.toPrecision(upperPart, 19) /
+          lowerPart;
       }
     } while (curX != nextX);
 
@@ -169,20 +193,23 @@ contract PolySwapFormula {
     uint256 length = parameters.length;
 
     for (uint256 i = 0; i < length; i++) {
-      result += FullMath.divTotalOfSum(
-        FullMath.toPrecision(parameters[i][0], decimals1),
-        FullMath.toPrecision(parameters[i][1], decimals2),
+      result += PolySwapFormulaHelper.divTotalOfSum(
+        PolySwapFormulaHelper.toPrecision(parameters[i][0], decimals1),
+        PolySwapFormulaHelper.toPrecision(parameters[i][1], decimals2),
         x
       );
     }
 
-    if (result >= FullMath.toPrecision(k, decimals2 - 1)) {
+    if (result >= PolySwapFormulaHelper.toPrecision(k, decimals2 - 1)) {
       isNegative = false;
     } else {
       isNegative = true;
     }
 
-    result = FullMath.subAbs(result, FullMath.toPrecision(k, decimals2 - 1));
+    result = PolySwapFormulaHelper.subAbs(
+      result,
+      PolySwapFormulaHelper.toPrecision(k, decimals2 - 1)
+    );
   }
 
   function derivativeF(
@@ -194,9 +221,9 @@ contract PolySwapFormula {
     uint256 length = parameters.length;
 
     for (uint256 i = 0; i < length; i++) {
-      result += FullMath.divPow2OfTotalOfSum(
-        FullMath.toPrecision(parameters[i][0], decimals1),
-        FullMath.toPrecision(parameters[i][1], decimals2),
+      result += PolySwapFormulaHelper.divPow2OfTotalOfSum(
+        PolySwapFormulaHelper.toPrecision(parameters[i][0], decimals1),
+        PolySwapFormulaHelper.toPrecision(parameters[i][1], decimals2),
         x
       );
     }
@@ -211,9 +238,9 @@ contract PolySwapFormula {
     uint256 length = parameters.length;
 
     for (uint256 i = 0; i < length; i++) {
-      result += FullMath.divPow3OfTotalOfSum(
-        FullMath.toPrecision(parameters[i][0], decimals1),
-        FullMath.toPrecision(parameters[i][1], decimals2),
+      result += PolySwapFormulaHelper.divPow3OfTotalOfSum(
+        PolySwapFormulaHelper.toPrecision(parameters[i][0], decimals1),
+        PolySwapFormulaHelper.toPrecision(parameters[i][1], decimals2),
         x
       );
     }
@@ -228,26 +255,29 @@ contract PolySwapFormula {
     uint256 decimals2
   ) public view returns (uint256 result, bool isNegative) {
     for (uint256 i = 1; i < parameters.length; i++) {
-      result += FullMath.mulDiv(
-        FullMath.toPrecision(parameters[i][0], decimals1),
+      result += PolySwapFormulaHelper.mulDiv(
+        PolySwapFormulaHelper.toPrecision(parameters[i][0], decimals1),
         parameters[0][1] - parameters[i][1],
-        FullMath.add(FullMath.toPrecision(parameters[i][1], decimals2), x)
+        PolySwapFormulaHelper.add(
+          PolySwapFormulaHelper.toPrecision(parameters[i][1], decimals2),
+          x
+        )
       );
-      result += FullMath.toPrecision(parameters[i][0], decimals2);
+      result += PolySwapFormulaHelper.toPrecision(parameters[i][0], decimals2);
     }
 
     if (
-      result + FullMath.toPrecision(parameters[0][0], decimals2) >=
-      x + FullMath.toPrecision(parameters[0][1], decimals2)
+      result + PolySwapFormulaHelper.toPrecision(parameters[0][0], decimals2) >=
+      x + PolySwapFormulaHelper.toPrecision(parameters[0][1], decimals2)
     ) {
       isNegative = false;
     } else {
       isNegative = true;
     }
 
-    result = FullMath.subAbs(
-      result + FullMath.toPrecision(parameters[0][0], decimals2),
-      x + FullMath.toPrecision(parameters[0][1], decimals2)
+    result = PolySwapFormulaHelper.subAbs(
+      result + PolySwapFormulaHelper.toPrecision(parameters[0][0], decimals2),
+      x + PolySwapFormulaHelper.toPrecision(parameters[0][1], decimals2)
     );
   }
 
@@ -258,15 +288,18 @@ contract PolySwapFormula {
     uint256 decimals2
   ) public pure returns (uint256 result) {
     for (uint256 i = 1; i < parameters.length; i++) {
-      result += FullMath.mulDiv(
-        FullMath.toPrecision(parameters[i][0], decimals1),
+      result += PolySwapFormulaHelper.mulDiv(
+        PolySwapFormulaHelper.toPrecision(parameters[i][0], decimals1),
         parameters[0][1] - parameters[i][1],
-        FullMath.pow2(
-          FullMath.add(FullMath.toPrecision(parameters[i][1], decimals2), x)
+        PolySwapFormulaHelper.pow2(
+          PolySwapFormulaHelper.add(
+            PolySwapFormulaHelper.toPrecision(parameters[i][1], decimals2),
+            x
+          )
         )
       );
     }
-    result += FullMath.toPrecision(1, decimals2 + 1);
+    result += PolySwapFormulaHelper.toPrecision(1, decimals2 + 1);
   }
 
   function appDoubleDerivativeF(
@@ -276,11 +309,14 @@ contract PolySwapFormula {
     uint256 decimals2
   ) public pure returns (uint256 result) {
     for (uint256 i = 1; i < parameters.length; i++) {
-      result += FullMath.mulDiv(
-        2 * FullMath.toPrecision(parameters[i][0], decimals1),
+      result += PolySwapFormulaHelper.mulDiv(
+        2 * PolySwapFormulaHelper.toPrecision(parameters[i][0], decimals1),
         parameters[0][1] - parameters[i][1],
-        FullMath.pow3(
-          FullMath.add(FullMath.toPrecision(parameters[i][1], decimals2), x)
+        PolySwapFormulaHelper.pow3(
+          PolySwapFormulaHelper.add(
+            PolySwapFormulaHelper.toPrecision(parameters[i][1], decimals2),
+            x
+          )
         )
       );
     }
