@@ -91,13 +91,28 @@ library PolySwapHelper {
     }
   }
 
-  function calculateReserveIndexToken(
+  function calculateReserveIndexOfToken(
     uint256 liquidity,
     uint160 maxPrice,
     uint160 curPrice
   ) internal pure returns (uint256 reserveIndexToken) {
     assembly {
       reserveIndexToken := mul(liquidity, sub(maxPrice, curPrice))
+    }
+  }
+
+  function calculateDeltaL(
+    uint256 liquidity,
+    uint256 deltaIndexOut,
+    uint256 fee,
+    uint256 bps,
+    uint256 reserveIndexToken
+  ) internal pure returns (uint256 deltaL) {
+    assembly {
+      deltaL := div(
+        mul(div(mul(liquidity, deltaIndexOut), reserveIndexToken), fee),
+        bps
+      )
     }
   }
 }

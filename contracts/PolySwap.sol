@@ -83,6 +83,9 @@ contract PolySwap {
     IERC20 tokenIn = IERC20(params.tokenIn);
     IERC20 tokenOut = IERC20(params.tokenOut);
 
+    console.log("ratioTokenIn is %s", ratioTokens[tokenIn]);
+    console.log("ratioTokenOut is %s", ratioTokens[tokenOut]);
+
     console.log("liqTokenIn is %s", ratioTokens[tokenIn] * liquidity);
 
     uint160 curPriceTokenIn = PolySwapHelper.calculateTokenPrice(
@@ -166,13 +169,26 @@ contract PolySwap {
       reserveTokens[tokenOut] - amountTokenOut
     );
 
-    // uint256 reserveTokenIndex;
-    // for (uint256 i = 0; i < tokens.length; ++i) {
-    //   reserveTokenIndex += PolySwapHelper.calculateReserveIndexOfToken(
-    //     ratioTokens[IERC20(tokens[i])] * liquidity,
-    //     maximumPriceTokens
-    //   );
-    // }
+    uint256 reserveTokenIndex;
+    for (uint256 i = 0; i < tokens.length; ++i) {
+      reserveTokenIndex += PolySwapHelper.calculateReserveIndexOfToken(
+        ratioTokens[IERC20(tokens[i])] * liquidity,
+        maximumPriceTokens[IERC20(tokens[i])],
+        minimumPriceTokens[IERC20(tokens[i])]
+      );
+    }
+
+    console.log("reserveTokenIndex is %s", reserveTokenIndex);
+
+    uint256 deltaL = PolySwapHelper.calculateDeltaL(
+      liquidity,
+      deltaIndexTokenOut,
+      fee,
+      BPS,
+      reserveTokenIndex
+    );
+
+    console.log("deltaL is %s", deltaL);
   }
 
   function _verifyReserve(

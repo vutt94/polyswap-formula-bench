@@ -50,7 +50,7 @@ describe("PolySwap", function () {
 
     Contract = await ethers.getContractFactory("PolySwap");
     contract = await Contract.deploy(
-      [tokenA.address, tokenB.address],
+      [tokenA.address, tokenB.address, tokenC.address],
       [
         BigNumber.from(1).mul(decimal),
         BigNumber.from(1).mul(decimal),
@@ -69,7 +69,7 @@ describe("PolySwap", function () {
       [tokenAReserve, tokenBReserve, tokenCReserve],
       BigNumber.from(1).mul(decimal3).mul(decimal),
       BigNumber.from(1).mul(decimal3).mul(decimal),
-      BigNumber.from(0),
+      BigNumber.from(10000),
       BigNumber.from(0),
       BigNumber.from(0)
     );
@@ -86,7 +86,7 @@ describe("PolySwap", function () {
   });
 
   it("PolySwap: Swap Exact Token For Token", async function () {
-    const swapAmountIn = BigNumber.from(6845707394643);
+    const swapAmountIn = BigNumber.from(845707394643).mul(decimal);
     const swapAmountOutMin = BigNumber.from(0);
     // const balanceTokenInAfterSwap = BigNumber.from(998900).mul(decimal);
     // const balanceTokenOutAfterSwap = "999023598611012685139043"; // manual calculated
